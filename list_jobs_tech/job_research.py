@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import re
 
-from .tempo_requests import tempo_requests_get, TEMPO_MEAN
+from .delayed_requests import tempo_requests_get, TEMPO_MEAN
 from .job_search_website import JobSearchWebSite
 
 class JobResearch:
