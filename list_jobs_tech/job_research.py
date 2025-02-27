@@ -1,8 +1,15 @@
 from bs4 import BeautifulSoup
 import re
 
-from .delayed_requests import tempo_requests_get, TEMPO_MEAN
+from .delayed_requests import DelayedRequest
 from .job_search_website import JobSearchWebSite
+
+
+TEMPO_MEAN = 10
+TEMPO_MIN = 4
+
+tempo_requests = DelayedRequest(TEMPO_MIN, TEMPO_MEAN)
+
 
 class JobResearch:
     def __init__(self, website: JobSearchWebSite, research_params: dict):
@@ -21,7 +28,7 @@ class JobResearch:
             "(^[0-9]*)",
             str(
                 BeautifulSoup(
-                    tempo_requests_get(
+                    tempo_requests.get(
                         self._website.get_search_url(**self._research_params)
                     ).text,
                     "html.parser"
@@ -48,7 +55,7 @@ class JobResearch:
         self._offers_pages_IDs = []
         print(f"Load offer IDs will take {len(self.search_pages)*TEMPO_MEAN}s")
         for search_page in self.search_pages:
-            response = tempo_requests_get(
+            response = tempo_requests.get(
                 search_page['url']
             )
             if response.ok:
@@ -70,7 +77,7 @@ class JobResearch:
         return self._website.get_offer_url(offer_ID)
     
     def get_description(self, offer_ID: str) -> str:
-        response = tempo_requests_get(self.get_offer_url(offer_ID))
+        response = tempo_requests.get(self.get_offer_url(offer_ID))
         if not response.ok:
             return None
         return BeautifulSoup(
