@@ -9,4 +9,6 @@ class ResearchWebsite(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
+    tempo_min = Column(String, nullable=False)
+    tempo_mean = Column(String, nullable=False)
     job_offers = relationship("JobOffer", back_populates="research_website")

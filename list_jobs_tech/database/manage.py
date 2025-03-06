@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
-
-from .models import Base
+from sqlalchemy.orm import sessionmaker
 
 DB_PATH = 'sqlite:///my_db.db'
 
-def get_engine():
-    return create_engine(DB_PATH)
+engine = create_engine(DB_PATH)
+
+Session = sessionmaker(bind=engine)
