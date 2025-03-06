@@ -3,6 +3,7 @@ import re
 
 from .delayed_requests import DelayedRequest
 from .job_search_website import JobSearchWebSite
+from .database import ResearchWebsite
 
 
 TEMPO_MEAN = 10
@@ -12,7 +13,7 @@ tempo_requests = DelayedRequest(TEMPO_MIN, TEMPO_MEAN)
 
 
 class JobResearch:
-    def __init__(self, website: JobSearchWebSite, research_params: dict):
+    def __init__(self, website: ResearchWebsite, research_params: dict):
         self._website = website
         self._research_params = research_params
         self._search_pages = None
@@ -20,8 +21,14 @@ class JobResearch:
         self._results = None
 
     @property
-    def website(self):
+    def website(self) -> ResearchWebsite:
         return self._website
+
+    @property
+    def website_class(self):
+        for subclass in JobSearchWebSite.__subclasses__():
+            if subclass.__name__ == self.website.name:
+                return subclass
 
     def get_results(self):
         self._results = int(re.match(
@@ -29,7 +36,7 @@ class JobResearch:
             str(
                 BeautifulSoup(
                     tempo_requests.get(
-                        self._website.get_search_url(**self._research_params)
+                        self.website_class.get_search_url(**self._research_params)
                     ).text,
                     "html.parser"
                 ).select_one("#zoneAfficherListeOffres h1.title").text
@@ -43,7 +50,7 @@ class JobResearch:
         return self._results
     
     def get_search_pages(self):
-        self._search_pages = self._website.get_search_pages(self._research_params, self.results)
+        self._search_pages = self.website_class.get_search_pages(self._research_params, self.results)
 
     @property
     def search_pages(self) -> list[dict]:
@@ -74,7 +81,7 @@ class JobResearch:
         return self._offers_pages_IDs
     
     def get_offer_url(self, offer_ID):
-        return self._website.get_offer_url(offer_ID)
+        return self.website_class.get_offer_url(offer_ID)
     
     def get_description(self, offer_ID: str) -> str:
         response = tempo_requests.get(self.get_offer_url(offer_ID))
