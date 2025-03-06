@@ -3,7 +3,7 @@ import re
 
 from .delayed_requests import DelayedRequest
 from .job_search_website import JobSearchWebSite
-from .database import ResearchWebsite, JobOffer
+from .database import ResearchWebsite, JobOffer, WorkCity
 
 
 TEMPO_MEAN = 10
@@ -13,8 +13,9 @@ tempo_requests = DelayedRequest(TEMPO_MIN, TEMPO_MEAN)
 
 
 class JobResearch:
-    def __init__(self, website: ResearchWebsite, research_params: dict):
+    def __init__(self, website: ResearchWebsite, city: WorkCity, research_params: dict):
         self._website = website
+        self._city = city
         self._research_params = research_params
         self._search_pages = None
         self._offers_pages_IDs = None
@@ -30,13 +31,21 @@ class JobResearch:
             if subclass.__name__ == self.website.name:
                 return subclass
 
+    @property
+    def city(self) -> WorkCity:
+        self._city
+
+    @property
+    def research_params(self) -> dict:
+        return self._research_params
+
     def get_results(self):
         self._results = int(re.match(
             "(^[0-9]*)",
             str(
                 BeautifulSoup(
                     tempo_requests.get(
-                        self.website_class.get_search_url(**self._research_params)
+                        self.website_class.get_search_url(**self.research_params)
                     ).text,
                     "html.parser"
                 ).select_one("#zoneAfficherListeOffres h1.title").text
@@ -50,7 +59,7 @@ class JobResearch:
         return self._results
     
     def get_search_pages(self):
-        self._search_pages = self.website_class.get_search_pages(self._research_params, self.results)
+        self._search_pages = self.website_class.get_search_pages(self.research_params, self.results)
 
     @property
     def search_pages(self) -> list[dict]:
@@ -86,12 +95,14 @@ class JobResearch:
                 for node in nodes:
                     offer_ID = node[search_page['target_data']]
                     self._offers_pages_IDs.append(offer_ID)
-                    self._job_offers = JobOffer(
+                    job_offer = JobOffer(
                         website_id=offer_ID,
                         url=self.get_offer_url(offer_ID),
                         description=self.get_description(offer_ID),
-                        research_website=self.website
+                        research_website=self.website,
                     )
+                    job_offer.work_cities.append(self.city)
+                    self._job_offers.append(job_offer)
         print("Offer IDs loaded !")
     
     @property
