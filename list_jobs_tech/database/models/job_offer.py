@@ -14,7 +14,7 @@ class JobOffer(Base):
     url = Column(String, nullable=False)
     score = Column(Float, default=0, nullable=False)
     technologies = relationship("Technology", secondary="job_offers_technologies", back_populates="job_offers")
-    work_cities = relationship("WorkCity", secondary="job_offers_technologies", back_populates="job_offers")
+    work_cities = relationship("WorkCity", secondary="job_offers_work_cities", back_populates="job_offers")
 
     research_website_id = Column(Integer, ForeignKey("research_website.id"))
     research_website = relationship("ResearchWebsite", back_populates="job_offers")

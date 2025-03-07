@@ -10,7 +10,7 @@ class WorkCity(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
 
-    job_offers = relationship("JobOffer", secondary="job_offers_technologies", back_populates="work_cities")
+    job_offers = relationship("JobOffer", secondary="job_offers_work_cities", back_populates="work_cities")
 
 
 class WorkCityResearchWebsiteAlias(Base):
