@@ -1,6 +1,5 @@
 import re
 from typing import Generator
-from itertools import islice
 
 from bs4 import BeautifulSoup
 
@@ -10,7 +9,7 @@ from .database import ResearchWebsite, JobOffer, WorkCity, WorkCityResearchWebsi
 
 
 class JobResearch:
-    def __init__(self, website: ResearchWebsite, city: WorkCity, research_params: dict):
+    def __init__(self, website: ResearchWebsite, city: WorkCity, research_params: dict, max_new: int = 50):
         self._website = website
         self._city = city
         self._research_params = research_params
@@ -19,6 +18,8 @@ class JobResearch:
         self._place = None
         self._delayed_requests = None
         self._job_offers = None
+        self._max = max_new
+        self.count = 0
 
     @property
     def website(self) -> ResearchWebsite:
@@ -53,7 +54,6 @@ class JobResearch:
     @property
     def session(self):
         return ManageDatabase.get_session()
-
 
     def update_or_create_job_offer(self, offer_ID: str) -> JobOffer | None:
         """
@@ -154,8 +154,12 @@ class JobResearch:
         """
         if self._job_offers is None:
             self._job_offers = []
-            for offer_ID in islice(self.get_job_offers_ID(),0 , 50):
+            for offer_ID in self.get_job_offers_ID():
                 job_offer = self.update_or_create_job_offer(offer_ID)
-                if job_offer is not None:
+                if job_offer is not None and self.is_under_max():
+                    self.count += 1
                     self._job_offers.append(job_offer)
         return self._job_offers
+
+    def is_under_max(self) -> bool:
+        return self._max > self.count
