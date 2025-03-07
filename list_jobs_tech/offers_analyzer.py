@@ -65,3 +65,14 @@ class OffersAnalyser:
                 offer.score /= len(offer.technologies)
         self.session.add_all(self.offers)
         self.session.commit()
+
+    def update_technologies(self):
+        for technology in self.session.query(Technology).all():
+            technology.average_score = 0
+            for offer in technology.job_offers:
+                technology.average_score += offer.score
+            if len(technology.job_offers) > 0:
+                technology.average_score /= len(technology.job_offers)
+                technology.deepen_score = technology.average_score * (5 - technology.skill_level)
+            self.session.add(technology)
+        self.session.commit()
