@@ -18,6 +18,7 @@ class JobResearch:
         self._session = None
         self._place = None
         self._delayed_requests = None
+        self._job_offers = None
 
     @property
     def website(self) -> ResearchWebsite:

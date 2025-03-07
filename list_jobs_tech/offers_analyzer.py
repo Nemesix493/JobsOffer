@@ -59,7 +59,7 @@ class OffersAnalyser:
         self._tech_by_aliases = None
 
     def analyse_offers(self) -> None:
-        for offer in self._offers:
+        for offer in self.offers:
             offer.score = 0
             word_list = self.replace_list(offer.description, REMOVE_PATTERN, " ").split(" ")
             for word in word_list:
@@ -69,6 +69,6 @@ class OffersAnalyser:
                     offer.score += technology.skill_level
             if len(offer.technologies) > 0:
                 offer.score /= len(offer.technologies)
-        self.session.add_all(self._offers)
+        self.session.add_all(self.offers)
         self.session.commit()
         self.close_session()
