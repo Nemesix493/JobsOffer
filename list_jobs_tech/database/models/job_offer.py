@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, func, UniqueConstraint
+from sqlalchemy import Column, Integer, Float, String, Date, ForeignKey, func, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from .base_model import Base
@@ -12,6 +12,7 @@ class JobOffer(Base):
     last_seen_date = Column(Date, default=func.current_date(), onupdate=func.current_date(), nullable=False)
     description = Column(String, nullable=False)
     url = Column(String, nullable=False)
+    score = Column(Float, default=0, nullable=False)
     technologies = relationship("Technology", secondary="job_offers_technologies", back_populates="job_offers")
     work_cities = relationship("WorkCity", secondary="job_offers_technologies", back_populates="job_offers")
 
