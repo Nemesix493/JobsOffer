@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, String, Date, ForeignKey, func, UniqueConstraint
+from sqlalchemy import Column, Integer, Float, String, Date, ForeignKey, func, UniqueConstraint, Table
 from sqlalchemy.orm import relationship
 
 from .base_model import Base
@@ -22,15 +22,17 @@ class JobOffer(Base):
     __table_args__ = (UniqueConstraint("website_id", "research_website_id", name="uq_website_id_research_website"),)
 
 
-class JobOffersTechnologies(Base):
-    __tablename__ = "job_offers_technologies"
-    id = Column(Integer, primary_key=True, index=True)
-    job_offer_id = Column(Integer, ForeignKey("job_offer.id"))
-    technology_id = Column(Integer, ForeignKey("technology.id"))
+JobOffersTechnologies = Table(
+    "job_offers_technologies",
+    Base.metadata,
+    Column("job_offer_id", ForeignKey("job_offer.id"), primary_key=True),
+    Column("technology_id", ForeignKey("technology.id"), primary_key=True)
+)
 
 
-class JobOffersWorkCities(Base):
-    __tablename__ = "job_offers_work_cities"
-    id = Column(Integer, primary_key=True, index=True)
-    job_offer_id = Column(Integer, ForeignKey("job_offer.id"))
-    work_city_id = Column(Integer, ForeignKey("work_city.id"))
+JobOffersWorkCities = Table(
+    "job_offers_work_cities",
+    Base.metadata,
+    Column("job_offer_id", ForeignKey("job_offer.id"), primary_key=True),
+    Column("work_city_id", ForeignKey("work_city.id"), primary_key=True)
+)
