@@ -1,11 +1,12 @@
 import re
 from typing import Generator
+from itertools import islice
 
 from bs4 import BeautifulSoup
 
 from .delayed_requests import DelayedRequest as DelayedRequests
 from .job_search_website import JobSearchWebSite
-from .database import ResearchWebsite, JobOffer, WorkCity, WorkCityResearchWebsiteAlias, Session
+from .database import ResearchWebsite, JobOffer, WorkCity, WorkCityResearchWebsiteAlias, ManageDatabase
 
 
 class JobResearch:
@@ -15,7 +16,6 @@ class JobResearch:
         self._research_params = research_params
         self._search_pages = None
         self._results = None
-        self._session = None
         self._place = None
         self._delayed_requests = None
         self._job_offers = None
@@ -32,7 +32,7 @@ class JobResearch:
 
     @property
     def city(self) -> WorkCity:
-        self._city
+        return self._city
 
     @property
     def place(self) -> WorkCityResearchWebsiteAlias:
@@ -52,20 +52,15 @@ class JobResearch:
 
     @property
     def session(self):
-        if self._session is None:
-            self._session = Session()
-        return self._session
+        return ManageDatabase.get_session()
 
-    def close_session(self):
-        self.session.close()
-        self._session = None
 
     def update_or_create_job_offer(self, offer_ID: str) -> JobOffer | None:
         """
         try to get object if got update it
         else create it
         """
-        query = self.session.query(JobOffer).join(ResearchWebsite).join(WorkCity)
+        query = self.session.query(JobOffer)
         job_offer = query.filter(
             JobOffer.website_id == offer_ID
         ).filter(
@@ -159,9 +154,8 @@ class JobResearch:
         """
         if self._job_offers is None:
             self._job_offers = []
-            for offer_ID in self.get_job_offers_ID():
+            for offer_ID in islice(self.get_job_offers_ID(),0 , 50):
                 job_offer = self.update_or_create_job_offer(offer_ID)
                 if job_offer is not None:
                     self._job_offers.append(job_offer)
-            self.close_session()
         return self._job_offers

@@ -2,7 +2,7 @@ from itertools import chain
 
 from .job_research import JobResearch
 from .settings import REMOVE_PATTERN
-from .database import JobOffer, Technology, TechnologyAlias, Session
+from .database import JobOffer, Technology, ManageDatabase
 
 
 class OffersAnalyser:
@@ -33,24 +33,18 @@ class OffersAnalyser:
 
     @property
     def session(self):
-        if self._session is None:
-            self._session = Session()
-        return self._session
-
-    def close_session(self):
-        self.session.close()
-        self._session = None
+        return ManageDatabase.get_session()
 
     @property
     def tech_by_aliases(self) -> dict[str: Technology]:
         if self._tech_by_aliases is None:
             self._tech_by_aliases = {}
-            all_technologies = self.session.query(Technology).join(TechnologyAlias).all()
+            all_technologies = self.session.query(Technology).all()
             for technology in all_technologies:
                 self._tech_by_aliases[technology.name] = technology
                 for alias in technology.aliases:
                     self._tech_by_aliases[alias.value] = technology
-            self.close_session()
+            print(self._tech_by_aliases.keys())
         return self._tech_by_aliases
 
     def __init__(self, research_list: list[JobResearch]):
@@ -71,4 +65,3 @@ class OffersAnalyser:
                 offer.score /= len(offer.technologies)
         self.session.add_all(self.offers)
         self.session.commit()
-        self.close_session()

@@ -1,5 +1,4 @@
 from .models import (
-    Base,
     ResearchWebsite,
     Technology,
     TechnologyAlias,
@@ -9,11 +8,9 @@ from .models import (
     JobOffersTechnologies,
     JobOffersWorkCities
 )
-from .manage import Session
+from .manage import ManageDatabase
 
 __all__ = [
-    'Session',
-    'Base',
     'ResearchWebsite',
     'Technology',
     'TechnologyAlias',
@@ -22,4 +19,5 @@ __all__ = [
     'JobOffer',
     'JobOffersTechnologies',
     'JobOffersWorkCities',
+    'ManageDatabase'
 ]
