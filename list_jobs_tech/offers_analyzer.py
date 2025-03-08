@@ -44,7 +44,6 @@ class OffersAnalyser:
                 self._tech_by_aliases[technology.name] = technology
                 for alias in technology.aliases:
                     self._tech_by_aliases[alias.value] = technology
-            print(self._tech_by_aliases.keys())
         return self._tech_by_aliases
 
     def __init__(self, research_list: list[JobResearch]):

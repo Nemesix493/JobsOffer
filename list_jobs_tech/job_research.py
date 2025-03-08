@@ -155,8 +155,10 @@ class JobResearch:
         if self._job_offers is None:
             self._job_offers = []
             for offer_ID in self.get_job_offers_ID():
+                if not self.is_under_max():
+                    break
                 job_offer = self.update_or_create_job_offer(offer_ID)
-                if job_offer is not None and self.is_under_max():
+                if job_offer is not None:
                     self.count += 1
                     self._job_offers.append(job_offer)
         return self._job_offers
