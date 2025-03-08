@@ -51,7 +51,7 @@ class ManageDatabase:
             conn.executescript(sql_script)
             conn.commit()
             conn.close()
-    
+
     @staticmethod
     def is_db_exist():
         return DB_PATH.exists() and DB_PATH.is_file()
