@@ -57,3 +57,15 @@ class RessourceCommand(Command):
             print("The json object must be a dict")
             return None
         return detail_object
+
+    @classmethod
+    def list_view(cls) -> None:
+        for instance in cls.get_query().all():
+            print(' - ' + str(instance).replace('\n', f"\n{7*' '}"))
+
+    @classmethod
+    def detail_view(cls, detail_arg: str) -> None:
+        instance = cls.get_instance(detail_arg)
+        if instance is None:
+            return None
+        print(str(instance))

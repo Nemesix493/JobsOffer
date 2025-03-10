@@ -75,18 +75,6 @@ class TechnologyResourceCommand(RessourceCommand):
         return detail_object
 
     @classmethod
-    def detail_view(cls, detail_arg: str) -> None:
-        instance = cls.get_instance(detail_arg)
-        if instance is None:
-            return None
-        print(str(instance))
-
-    @classmethod
-    def list_view(cls) -> None:
-        for technology in cls.get_query().all():
-            print(' - ' + str(technology).replace('\n', f"\n{7*' '}"))
-
-    @classmethod
     def create_view(cls, create_arg: str) -> None:
         create_object = cls.parse_json(create_arg)
         if create_object is None:
