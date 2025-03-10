@@ -5,9 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from .models import Base
-
-DB_PATH = Path(__file__).resolve().parent.parent.parent / "my_db.db"
-INITIAL_DATA = Path(__file__).resolve().parent.parent.parent / "initial_data.sql"
+from ..settings import DB_PATH, INITIAL_DATA
 
 
 class ManageDatabase:
