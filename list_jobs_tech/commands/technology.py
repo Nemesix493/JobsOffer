@@ -1,22 +1,20 @@
 from argparse import ArgumentParser, Namespace
-from json import (
-    loads as json_load,
-    JSONDecodeError
-)
 
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError
 
-from .command import Command
+from .ressource_command import RessourceCommand
 from ..database import ManageDatabase
 from ..database.models import Technology, TechnologyAlias
 
 
-class TechnologyResourceCommand(Command):
+class TechnologyResourceCommand(RessourceCommand):
 
     UNIQUE_KEYS = [
         'id',
         'name'
     ]
+
+    TABLE = Technology
 
     @staticmethod
     def get_description() -> str:
@@ -66,35 +64,9 @@ class TechnologyResourceCommand(Command):
             return cls.partial_update_view(parsed_args.partial_update)
 
     @classmethod
-    def get_instance(cls, arg: str) -> Technology:
-        arg_dict = cls.parse_json(arg)
-        if arg_dict is None:
-            return None
-        for key in cls.UNIQUE_KEYS:
-            if key in arg_dict.keys():
-                try:
-                    return (
-                        ManageDatabase.get_session()
-                        .query(Technology)
-                        .filter(
-                            getattr(Technology, key) == arg_dict[key]
-                        ).one()
-                    )
-                except NoResultFound as e:
-                    print(f'Technology not found !\n{e}')
-                except Exception as e:
-                    print(e)
-        return None
-
-    @staticmethod
-    def parse_json(json_text: str) -> dict | None:
-        try:
-            detail_object = json_load(json_text)
-        except JSONDecodeError as e:
-            print(f"The send json is not correct\n\"{e}\"")
-            return None
-        if not isinstance(detail_object, dict):
-            print("The json object must be a dict")
+    def parse_json(cls, json_text: str) -> dict | None:
+        detail_object = super().parse_json(json_text)
+        if detail_object is None:
             return None
         aliases = detail_object.get('aliases', [])
         if not isinstance(aliases, list):
@@ -109,10 +81,10 @@ class TechnologyResourceCommand(Command):
             return None
         print(str(instance))
 
-    @staticmethod
-    def list_view() -> None:
-        for technology in ManageDatabase.get_session().query(Technology).all():
-            print(' - ' + str(technology).replace('\n', f"\n{4*' '}"))
+    @classmethod
+    def list_view(cls) -> None:
+        for technology in cls.get_query().all():
+            print(' - ' + str(technology).replace('\n', f"\n{7*' '}"))
 
     @classmethod
     def create_view(cls, create_arg: str) -> None:
