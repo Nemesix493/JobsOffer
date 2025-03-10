@@ -15,6 +15,20 @@ class Technology(Base):
     aliases = relationship("TechnologyAlias", back_populates="technology")
     job_offers = relationship("JobOffer", secondary="job_offers_technologies", back_populates="technologies")
 
+    def __str__(self) -> str:
+        str_result = (
+            f"id: {self.id}\n"
+            f"name: {self.name}\n"
+            f"skill_level: {self.skill_level}\n"
+            f"average_score: {self.average_score}\n"
+            f"deepen_score: {self.deepen_score}"
+        )
+        if len(self.aliases) > 0:
+            str_result += "\naliases:"
+            for alias in self.aliases:
+                str_result += f"\n{4*' '}- {alias.value}"
+        return str_result
+
 
 class TechnologyAlias(Base):
     __tablename__ = "technology_alias"

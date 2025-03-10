@@ -12,3 +12,12 @@ class ResearchWebsite(Base):
     tempo_min = Column(Integer, nullable=False)
     tempo_mean = Column(Integer, nullable=False)
     job_offers = relationship("JobOffer", back_populates="research_website")
+
+    def __str__(self) -> str:
+        return (
+            f"id: {self.id}\n"
+            f"name: {self.name}\n"
+            f"tempo_min: {self.tempo_min}\n"
+            f"tempo_mean: {self.tempo_mean}\n"
+            f"job_offers: {len(self.job_offers)}"
+        )
