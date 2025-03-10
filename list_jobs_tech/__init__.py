@@ -1,7 +1,6 @@
-from .job_search_website import FranceTravail
-from .job_research import JobResearch
-from .offers_analyzer import OffersAnalyser
+from .commands.main_command import MainCommand
 
 
 __all__ = [
+    'MainCommand'
 ]
