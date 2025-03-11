@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from .command import Command
 from ..report import Report
+from ..email_sender import EmailSender
 
 
 class ReportCommand(Command):
@@ -14,8 +15,27 @@ class ReportCommand(Command):
 
     @classmethod
     def configure_parser(cls, parent: str, parser: ArgumentParser) -> None:
-        pass
+        parser.add_argument(
+            "-e",
+            "--email",
+            nargs="?",
+            dest="email",
+            const=True,
+            help="Send the report to EMAIL adresse\n"
+            "Without EMAIL specify send to the default email"
+            " if configured"
+        )
 
     @classmethod
     def execute(cls, parsed_args: Namespace) -> None:
-        Report().report()
+        report = Report()
+        report.print_report()
+        if parsed_args.email:
+            if isinstance(parsed_args.email, str):
+                email_adresse = parsed_args.email
+            else:
+                email_adresse = None
+            try:
+                EmailSender(email_adresse).send_report(report)
+            except ValueError as e:
+                print(e)
