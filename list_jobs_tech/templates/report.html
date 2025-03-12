@@ -30,6 +30,9 @@
         {%- for offer in report.report_should_look %}
             <li>
                 <p>Score : {{offer.score}}</p>
+                {%- if offer.time_adjusted_score %}
+                <p>Time ajusted score : {{offer.time_adjusted_score}}</p>
+                {% endif %}
                 <p>Url : <a href="{{offer.url}}">{{offer.url}}</a></p>
                 <ul>
                     {%- for techno in offer.technologies %}

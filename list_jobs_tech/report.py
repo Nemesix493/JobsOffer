@@ -1,4 +1,4 @@
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from jinja2 import Environment, FileSystemLoader
 
 from .database import JobOffer, Technology, ManageDatabase
@@ -40,18 +40,37 @@ class Report:
             )
         return getattr(self, "_should_deepen")
 
+    def get_should_look(self):
+        max_time_adjusted = self.session.query(
+            func.max(JobOffer.time_adjusted)
+        ).scalar_subquery()
+        reported_offer = (
+            self.session.query(
+                JobOffer,
+                (
+                    (3 * JobOffer.score + (10 * JobOffer.time_adjusted / max_time_adjusted)) / 5
+                ).label('time_adjusted_score')
+            ).filter(JobOffer.score >= 3)
+            .filter(JobOffer.reported is not True)
+            .order_by(desc('time_adjusted_score'))
+            .limit(5).all()
+        )
+        should_look = []
+        for job_offer, time_adjusted_score in reported_offer:
+            job_offer.reported = True
+            job_offer.set_time_adjusted_score = time_adjusted_score
+            should_look.append(job_offer)
+            self.session.add(job_offer)
+        self.session.commit()
+        return should_look
+
     @property
     def report_should_look(self):
         if not hasattr(self, "_should_look"):
             setattr(
                 self,
                 "_should_look",
-                (
-                    self.session
-                    .query(JobOffer)
-                    .order_by(desc(JobOffer.score))
-                    .limit(10).all()
-                )
+                self.get_should_look()
             )
         return getattr(self, "_should_look")
 
@@ -65,6 +84,8 @@ class Report:
         print("You should look :")
         for offer in self.report_should_look:
             print(f"    - {offer.score} : ")
+            if offer.time_adjusted_score:
+                print(f"{8*' '}{offer.time_adjusted_score}")
             print(f"{8*' '}{offer.url}")
 
     def html(self):
