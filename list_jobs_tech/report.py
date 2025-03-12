@@ -75,22 +75,18 @@ class Report:
         return getattr(self, "_should_look")
 
     def print_report(self):
-        print('You should learn :')
-        for tech in self.report_should_learn:
-            print(f"    - {tech.name} : {tech.average_score}")
-        print('You should deepen :')
-        for tech in self.report_should_deepen:
-            print(f"    - {tech.name} : {tech.deepen_score} {tech.skill_level}")
-        print("You should look :")
-        for offer in self.report_should_look:
-            print(f"    - {offer.score} : ")
-            if offer.time_adjusted_score:
-                print(f"{8*' '}{offer.time_adjusted_score}")
-            print(f"{8*' '}{offer.url}")
+        print(self.text())
 
     def html(self):
         env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = env.get_template("report.html")
+        result = template.render(report=self)
+        env.cache.clear()
+        return result
+    
+    def text(self):
+        env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
+        template = env.get_template("report.txt")
         result = template.render(report=self)
         env.cache.clear()
         return result

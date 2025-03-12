@@ -29,11 +29,14 @@
     <ol>
         {%- for offer in report.report_should_look %}
             <li>
+                <h4>{{offer.title}}</h4>
+                <p>{{offer.work_cities[0].name}}</p>
                 <p>Score : {{offer.score}}</p>
                 {%- if offer.time_adjusted_score %}
                 <p>Time ajusted score : {{offer.time_adjusted_score}}</p>
                 {% endif %}
                 <p>Url : <a href="{{offer.url}}">{{offer.url}}</a></p>
+                <p>Technologies :</p>
                 <ul>
                     {%- for techno in offer.technologies %}
                         <li>{{techno.name}}</li>
