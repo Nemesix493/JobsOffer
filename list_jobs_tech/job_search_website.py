@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-import requests
-from bs4 import BeautifulSoup
+
 
 class JobSearchWebSite(ABC):
     _search_page = str()
@@ -25,7 +24,7 @@ class JobSearchWebSite(ABC):
             for key, val in url_params_dict.items()
         ])
         return cls._search_page + url_params
-    
+
     @classmethod
     @abstractmethod
     def get_search_pages(cls, search_params, results: int):
@@ -34,11 +33,10 @@ class JobSearchWebSite(ABC):
     @classmethod
     def get_search_page_targets_nodes(cls, page_number: int = 0):
         return cls._search_page_targets_nodes
-    
+
     @classmethod
     def get_offer_url(cls, offer_ID: str) -> str:
         return cls._offer_base_url + offer_ID
-
 
 
 class FranceTravail(JobSearchWebSite):
