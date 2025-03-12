@@ -1,5 +1,6 @@
 import re
 from typing import Generator
+from datetime import date
 
 from bs4 import BeautifulSoup
 
@@ -74,16 +75,7 @@ class JobResearch:
             self.session.add(job_offer)
             self.session.commit()
             return None
-        job_offer = JobOffer(
-            website_id=offer_ID,
-            url=self.get_offer_url(offer_ID),
-            description=self.get_description(offer_ID),
-            research_website=self.website,
-        )
-        job_offer.work_cities.append(self.city)
-        self.session.add(job_offer)
-        self.session.commit()
-        return job_offer
+        return self.get_job_offer(offer_ID)
 
     @property
     def delayed_requests(self) -> DelayedRequests:
@@ -122,17 +114,54 @@ class JobResearch:
             )
         return self._search_pages
 
+    def get_job_offer(self, offer_ID) -> JobOffer:
+        url = self.get_offer_url(offer_ID)
+        response = self.delayed_requests.get(url)
+        if not response.ok:
+            return None
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+        job_offer = JobOffer(
+            website_id=offer_ID,
+            url=url,
+            description=self.get_description(soup),
+            title=self.get_offer_title(soup),
+            research_website=self.website,
+        )
+        job_offer.work_cities.append(self.city)
+        add_date = self.get_offer_add_date(soup)
+        if add_date is not None:
+            job_offer.add_date = add_date
+        self.session.add(job_offer)
+        self.session.commit()
+        return job_offer
+
     def get_offer_url(self, offer_ID) -> str:
         return self.website_class.get_offer_url(offer_ID)
 
-    def get_description(self, offer_ID: str) -> str:
-        response = self.delayed_requests.get(self.get_offer_url(offer_ID))
-        if not response.ok:
+    def get_offer_title(self, soup: BeautifulSoup) -> str:
+        return soup.select_one("#labelPopinDetailsOffre span[itemprop=\"title\"]").text
+
+    def get_description(self, soup: BeautifulSoup) -> str:
+        return soup.select_one("div.panel-container div.modal-body div.description").text
+
+    def get_offer_add_date(self, soup: BeautifulSoup) -> date | None:
+        date_extracted_text = soup.select_one(
+            "div.modal-content div.modal-body p span[itemprop=\"datePosted\"]"
+        ).get('content', None)
+        if date_extracted_text is None:
             return None
-        return BeautifulSoup(
-            response.text,
-            "html.parser"
-        ).select_one("div.panel-container div.modal-body div.description").text
+        match = re.match(
+            r"(\d{4})-(\d{2})-(\d{2})",
+            date_extracted_text
+        )
+        if match:
+            year, month, day = map(int, match.groups())
+            return date(year, month, day)
+        else:
+            return None
 
     def get_job_offers_ID(self) -> Generator[str, None, None]:
         for search_page in self.search_pages:
