@@ -18,6 +18,7 @@ class ManageDatabase:
     @classmethod
     def get_session(cls):
         if not hasattr(cls, '_session'):
+            cls.init_database()
             cls._session = sessionmaker(bind=cls.get_engine())()
         return cls._session
 

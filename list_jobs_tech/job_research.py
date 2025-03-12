@@ -20,6 +20,7 @@ class JobResearch:
         self._job_offers = None
         self._max = max_new
         self.count = 0
+        self._research_params['place'] = self.place
 
     @property
     def website(self) -> ResearchWebsite:
@@ -49,6 +50,7 @@ class JobResearch:
 
     @property
     def research_params(self) -> dict:
+
         return self._research_params
 
     @property

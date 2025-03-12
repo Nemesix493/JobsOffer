@@ -4,6 +4,3 @@ exclude =
     .git,
     __pycache__,
     env,
-    list_jobs_tech/job_search_website.py,
-    list_jobs_tech/settings.py,
-    run.py,
