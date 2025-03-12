@@ -60,7 +60,6 @@ def settings_path():
     current_module = sys.modules[__name__]
     for key in settings_keys:
         if hasattr(externe_settings_module, key):
-            print(f"{key} set in {current_module.__name__}")
             setattr(
                 current_module,
                 key,
