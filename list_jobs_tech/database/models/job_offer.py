@@ -11,6 +11,7 @@ class JobOffer(Base):
     add_date = Column(Date, default=func.current_date(), nullable=False)
     last_seen_date = Column(Date, default=func.current_date(), onupdate=func.current_date(), nullable=False)
     description = Column(String, nullable=False)
+    title = Column(String, nullable=False)
     url = Column(String, nullable=False)
     score = Column(Float, default=0, nullable=False)
     reported = Column(Boolean, default=False, nullable=False)

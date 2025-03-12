@@ -1,0 +1,30 @@
+Report
+
+You should learn :
+{%- for technology in report.report_should_learn %}
+    - name : {{technology.name}}
+        Skill level : {{technology.skill_level}}
+        Average score : {{technology.average_score}}
+{%- endfor %}
+    
+You should deepen :
+{%- for technology in report.report_should_deepen %}
+    - name : {{technology.name}}
+        Skill level : {{technology.skill_level}}
+        Deepen score : {{technology.deepen_score}}
+{%- endfor %}
+
+You should look :</h2>
+{%- for offer in report.report_should_look %}
+    - {{offer.title}}
+        {{offer.work_cities[0].name}}
+        Score : {{offer.score}}
+        {%- if offer.time_adjusted_score %}
+        Time ajusted score : {{offer.time_adjusted_score}}
+        {%- endif %}
+        Url : {{offer.url}}
+        Technologies:
+        {%- for techno in offer.technologies %}
+            - {{techno.name}}
+        {%- endfor %}
+{% endfor %}
