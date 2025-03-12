@@ -24,19 +24,6 @@ EMAIL_ENABLE = False
 
 TEMPLATES_DIR = BASE_DIR / 'templates'
 
-# remove pattern for offer description analyse
-
-REMOVE_PATTERN = [
-    ",",
-    "/",
-    "\n",
-    "?",
-    "..",
-    ". ",
-    ".\n",
-    "\\"
-]
-
 # Settings initialisation
 
 settings_keys = [

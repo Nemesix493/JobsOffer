@@ -1,7 +1,7 @@
+import re
 from itertools import chain
 
 from .job_research import JobResearch
-from .settings import REMOVE_PATTERN
 from .database import JobOffer, Technology, ManageDatabase
 
 
@@ -51,15 +51,21 @@ class OffersAnalyser:
         self._offers = None
         self._tech_by_aliases = None
 
+    def analyse_offer_technologies(self, offer_description: str) -> list[Technology]:
+        technologies = set()
+        for pattern, technology in self.tech_by_aliases.items():
+            if re.search(re.escape(pattern), offer_description, re.IGNORECASE):
+                technologies.add(technology)
+        return list(technologies)
+
     def analyse_offers(self) -> None:
         for offer in self.offers:
             offer.score = 0
-            word_list = self.replace_list(offer.description, REMOVE_PATTERN, " ").split(" ")
-            for word in word_list:
-                technology = self.tech_by_aliases.get(word.lower(), None)
-                if technology is not None and technology not in offer.technologies:
+            technologies = self.analyse_offer_technologies(offer.description)
+            offer.score = sum([technology.skill_level for technology in technologies])
+            for technology in technologies:
+                if technology not in offer.technologies:
                     offer.technologies.append(technology)
-                    offer.score += technology.skill_level
             if len(offer.technologies) > 0:
                 offer.score /= len(offer.technologies)
         self.session.add_all(self.offers)
