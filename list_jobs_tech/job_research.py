@@ -1,12 +1,12 @@
 import re
 from typing import Generator
-from datetime import date
 
 from bs4 import BeautifulSoup
 
 from .delayed_requests import DelayedRequest as DelayedRequests
 from .job_search_website import JobSearchWebSite
 from .database import ResearchWebsite, JobOffer, WorkCity, WorkCityResearchWebsiteAlias, ManageDatabase
+from .data_extraction import DataExtractor, ExtractDate, ExtractString
 
 
 class JobResearch:
@@ -22,6 +22,7 @@ class JobResearch:
         self._max = max_new
         self.count = 0
         self._research_params['place'] = self.place
+        self._data_extractor = self.setup_data_extractor()
 
     @property
     def website(self) -> ResearchWebsite:
@@ -57,6 +58,34 @@ class JobResearch:
     @property
     def session(self):
         return ManageDatabase.get_session()
+
+    @property
+    def data_extractor(self):
+        return self._data_extractor
+
+    def setup_data_extractor(self):
+        return DataExtractor(
+            {
+                'add_date': ExtractDate(
+                    node_selector="div.modal-content div.modal-body p span[itemprop=\"datePosted\"]",
+                    target_data="content",
+                    regex=r"(\d{4})-(\d{2})-(\d{2})",
+                    date_field_order=(
+                        ExtractDate.DateField.YEAR,
+                        ExtractDate.DateField.MONTH,
+                        ExtractDate.DateField.DAY,
+                    )
+                ),
+                'title': ExtractString(
+                    node_selector="#labelPopinDetailsOffre span[itemprop=\"title\"]",
+                    target_data="text"
+                ),
+                'description': ExtractString(
+                    node_selector="div.panel-container div.modal-body div.description",
+                    target_data="text"
+                )
+            }
+        )
 
     def update_or_create_job_offer(self, offer_ID: str) -> JobOffer | None:
         """
@@ -117,51 +146,30 @@ class JobResearch:
     def get_job_offer(self, offer_ID) -> JobOffer:
         url = self.get_offer_url(offer_ID)
         response = self.delayed_requests.get(url)
-        if not response.ok:
-            return None
-        soup = BeautifulSoup(
-            response.text,
-            "html.parser"
-        )
         job_offer = JobOffer(
             website_id=offer_ID,
             url=url,
-            description=self.get_description(soup),
-            title=self.get_offer_title(soup),
             research_website=self.website,
         )
+        try:
+            job_offer_dict = self.data_extractor(response)
+        except Exception as e:
+            print(url)
+            print(e)
+            return None
+        for key, val in job_offer_dict.items():
+            setattr(
+                job_offer,
+                key,
+                val
+            )
         job_offer.work_cities.append(self.city)
-        add_date = self.get_offer_add_date(soup)
-        if add_date is not None:
-            job_offer.add_date = add_date
         self.session.add(job_offer)
         self.session.commit()
         return job_offer
 
     def get_offer_url(self, offer_ID) -> str:
         return self.website_class.get_offer_url(offer_ID)
-
-    def get_offer_title(self, soup: BeautifulSoup) -> str:
-        return soup.select_one("#labelPopinDetailsOffre span[itemprop=\"title\"]").text
-
-    def get_description(self, soup: BeautifulSoup) -> str:
-        return soup.select_one("div.panel-container div.modal-body div.description").text
-
-    def get_offer_add_date(self, soup: BeautifulSoup) -> date | None:
-        date_extracted_text = soup.select_one(
-            "div.modal-content div.modal-body p span[itemprop=\"datePosted\"]"
-        ).get('content', None)
-        if date_extracted_text is None:
-            return None
-        match = re.match(
-            r"(\d{4})-(\d{2})-(\d{2})",
-            date_extracted_text
-        )
-        if match:
-            year, month, day = map(int, match.groups())
-            return date(year, month, day)
-        else:
-            return None
 
     def get_job_offers_ID(self) -> Generator[str, None, None]:
         for search_page in self.search_pages:
