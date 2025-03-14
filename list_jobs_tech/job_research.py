@@ -4,9 +4,7 @@ from typing import Generator
 from bs4 import BeautifulSoup
 
 from .delayed_requests import DelayedRequest as DelayedRequests
-from .job_search_website import JobSearchWebSite
 from .database import ResearchWebsite, JobOffer, WorkCity, WorkCityResearchWebsiteAlias, ManageDatabase
-from .data_extraction import DataExtractor, ExtractDate, ExtractString
 
 
 class JobResearch:
@@ -22,17 +20,10 @@ class JobResearch:
         self._max = max_new
         self.count = 0
         self._research_params['place'] = self.place
-        self._data_extractor = self.setup_data_extractor()
 
     @property
     def website(self) -> ResearchWebsite:
         return self._website
-
-    @property
-    def website_class(self):
-        for subclass in JobSearchWebSite.__subclasses__():
-            if subclass.__name__ == self.website.name:
-                return subclass
 
     @property
     def city(self) -> WorkCity:
@@ -58,34 +49,6 @@ class JobResearch:
     @property
     def session(self):
         return ManageDatabase.get_session()
-
-    @property
-    def data_extractor(self):
-        return self._data_extractor
-
-    def setup_data_extractor(self):
-        return DataExtractor(
-            {
-                'add_date': ExtractDate(
-                    node_selector="div.modal-content div.modal-body p span[itemprop=\"datePosted\"]",
-                    target_data="content",
-                    regex=r"(\d{4})-(\d{2})-(\d{2})",
-                    date_field_order=(
-                        ExtractDate.DateField.YEAR,
-                        ExtractDate.DateField.MONTH,
-                        ExtractDate.DateField.DAY,
-                    )
-                ),
-                'title': ExtractString(
-                    node_selector="#labelPopinDetailsOffre span[itemprop=\"title\"]",
-                    target_data="text"
-                ),
-                'description': ExtractString(
-                    node_selector="div.panel-container div.modal-body div.description",
-                    target_data="text"
-                )
-            }
-        )
 
     def update_or_create_job_offer(self, offer_ID: str) -> JobOffer | None:
         """
@@ -121,7 +84,7 @@ class JobResearch:
             str(
                 BeautifulSoup(
                     self.delayed_requests.get(
-                        self.website_class.get_search_url(**self.research_params)
+                        self.website.job_search_website_class.get_search_url(**self.research_params)
                     ).text,
                     "html.parser"
                 ).select_one("#zoneAfficherListeOffres h1.title").text
@@ -137,14 +100,14 @@ class JobResearch:
     @property
     def search_pages(self) -> list[dict]:
         if self._search_pages is None:
-            self._search_pages = self.website_class.get_search_pages(
+            self._search_pages = self.website.job_search_website_class.get_search_pages(
                 self.research_params,
                 self.results
             )
         return self._search_pages
 
     def get_job_offer(self, offer_ID) -> JobOffer:
-        url = self.get_offer_url(offer_ID)
+        url = self.website.get_offer_url(offer_ID)
         response = self.delayed_requests.get(url)
         job_offer = JobOffer(
             website_id=offer_ID,
@@ -152,7 +115,7 @@ class JobResearch:
             research_website=self.website,
         )
         try:
-            job_offer_dict = self.data_extractor(response)
+            job_offer_dict = self.website.job_offer_extractor(response)
         except Exception as e:
             print(url)
             print(e)
@@ -167,9 +130,6 @@ class JobResearch:
         self.session.add(job_offer)
         self.session.commit()
         return job_offer
-
-    def get_offer_url(self, offer_ID) -> str:
-        return self.website_class.get_offer_url(offer_ID)
 
     def get_job_offers_ID(self) -> Generator[str, None, None]:
         for search_page in self.search_pages:
