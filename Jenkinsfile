@@ -15,7 +15,7 @@ pipeline{
             steps{
                 script{
                     def envDir = 'env/'
-                    if (fileExists(envDir)) {
+                    if (!fileExists(envDir)) {
                         sh "python3 -m venv ${envDir}"
                     }
                 }
