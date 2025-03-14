@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report</title>
+</head>
+<body>
+    <h1>Report</h1>
+    <h2>You should learn :</h2>
+    <ol>
+        {%- for technology in report.report_should_learn %}
+            <li>
+                <p>name : {{technology.name}}</p>
+                <p>Skill level : {{technology.skill_level}}</p>
+                <p>Average score : {{technology.average_score}}</p>
+            </li>
+        {% endfor %}
+    </ol>
+    <h2>You should deepen :</h2>
+    <ol>
+        {%- for technology in report.report_should_deepen %}
+            <li>
+                <p>name : {{technology.name}}</p>
+                <p>Skill level : {{technology.skill_level}}</p>
+                <p>Deepen score : {{technology.deepen_score}}</p>
+            </li>
+        {% endfor %}
+    </ol>
+    <h2>You should look :</h2>
+    <ol>
+        {%- for offer in report.report_should_look %}
+            <li>
+                <h4>{{offer.title}}</h4>
+                <p>{{offer.work_cities[0].name}}</p>
+                <p>Score : {{offer.score}}</p>
+                {%- if offer.time_adjusted_score %}
+                <p>Time ajusted score : {{offer.time_adjusted_score}}</p>
+                {% endif %}
+                <p>Url : <a href="{{offer.url}}">{{offer.url}}</a></p>
+                <p>Technologies :</p>
+                <ul>
+                    {%- for techno in offer.technologies %}
+                        <li>{{techno.name}}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ol>
+</body>
+</html>
