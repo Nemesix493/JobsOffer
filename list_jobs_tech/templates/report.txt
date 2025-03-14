@@ -14,7 +14,7 @@ You should deepen :
         Deepen score : {{technology.deepen_score}}
 {%- endfor %}
 
-You should look :</h2>
+You should look :
 {%- for offer in report.report_should_look %}
     - {{offer.title}}
         {{offer.work_cities[0].name}}
