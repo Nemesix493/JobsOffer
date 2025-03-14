@@ -9,7 +9,6 @@ class JobSearchWebSite(ABC):
     _search_page_param_default = dict()
     _search_page_targets_nodes = str()
     _search_page_target_data = str()
-    _offer_base_url = str()
 
     @classmethod
     def get_search_url(cls, **search_params) -> str:
@@ -34,10 +33,6 @@ class JobSearchWebSite(ABC):
     def get_search_page_targets_nodes(cls, page_number: int = 0):
         return cls._search_page_targets_nodes
 
-    @classmethod
-    def get_offer_url(cls, offer_ID: str) -> str:
-        return cls._offer_base_url + offer_ID
-
 
 class FranceTravail(JobSearchWebSite):
 
@@ -54,7 +49,6 @@ class FranceTravail(JobSearchWebSite):
     }
     _search_page_targets_nodes = "#page_0-19 li.result"
     _search_page_target_data = "data-id-offre"
-    _offer_base_url = "https://candidat.francetravail.fr/offres/recherche/detail/"
 
     @classmethod
     def get_search_pages(cls, search_params: dict, results: int):
