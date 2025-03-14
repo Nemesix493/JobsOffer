@@ -1,11 +1,9 @@
 import re
 from typing import Generator
-from datetime import date
 
 from bs4 import BeautifulSoup
 
 from .delayed_requests import DelayedRequest as DelayedRequests
-from .job_search_website import JobSearchWebSite
 from .database import ResearchWebsite, JobOffer, WorkCity, WorkCityResearchWebsiteAlias, ManageDatabase
 
 
@@ -26,12 +24,6 @@ class JobResearch:
     @property
     def website(self) -> ResearchWebsite:
         return self._website
-
-    @property
-    def website_class(self):
-        for subclass in JobSearchWebSite.__subclasses__():
-            if subclass.__name__ == self.website.name:
-                return subclass
 
     @property
     def city(self) -> WorkCity:
@@ -92,7 +84,7 @@ class JobResearch:
             str(
                 BeautifulSoup(
                     self.delayed_requests.get(
-                        self.website_class.get_search_url(**self.research_params)
+                        self.website.job_search_website_class.get_search_url(**self.research_params)
                     ).text,
                     "html.parser"
                 ).select_one("#zoneAfficherListeOffres h1.title").text
@@ -108,60 +100,36 @@ class JobResearch:
     @property
     def search_pages(self) -> list[dict]:
         if self._search_pages is None:
-            self._search_pages = self.website_class.get_search_pages(
+            self._search_pages = self.website.job_search_website_class.get_search_pages(
                 self.research_params,
                 self.results
             )
         return self._search_pages
 
     def get_job_offer(self, offer_ID) -> JobOffer:
-        url = self.get_offer_url(offer_ID)
+        url = self.website.get_offer_url(offer_ID)
         response = self.delayed_requests.get(url)
-        if not response.ok:
-            return None
-        soup = BeautifulSoup(
-            response.text,
-            "html.parser"
-        )
         job_offer = JobOffer(
             website_id=offer_ID,
             url=url,
-            description=self.get_description(soup),
-            title=self.get_offer_title(soup),
             research_website=self.website,
         )
+        try:
+            job_offer_dict = self.website.job_offer_extractor(response)
+        except Exception as e:
+            print(url)
+            print(e)
+            return None
+        for key, val in job_offer_dict.items():
+            setattr(
+                job_offer,
+                key,
+                val
+            )
         job_offer.work_cities.append(self.city)
-        add_date = self.get_offer_add_date(soup)
-        if add_date is not None:
-            job_offer.add_date = add_date
         self.session.add(job_offer)
         self.session.commit()
         return job_offer
-
-    def get_offer_url(self, offer_ID) -> str:
-        return self.website_class.get_offer_url(offer_ID)
-
-    def get_offer_title(self, soup: BeautifulSoup) -> str:
-        return soup.select_one("#labelPopinDetailsOffre span[itemprop=\"title\"]").text
-
-    def get_description(self, soup: BeautifulSoup) -> str:
-        return soup.select_one("div.panel-container div.modal-body div.description").text
-
-    def get_offer_add_date(self, soup: BeautifulSoup) -> date | None:
-        date_extracted_text = soup.select_one(
-            "div.modal-content div.modal-body p span[itemprop=\"datePosted\"]"
-        ).get('content', None)
-        if date_extracted_text is None:
-            return None
-        match = re.match(
-            r"(\d{4})-(\d{2})-(\d{2})",
-            date_extracted_text
-        )
-        if match:
-            year, month, day = map(int, match.groups())
-            return date(year, month, day)
-        else:
-            return None
 
     def get_job_offers_ID(self) -> Generator[str, None, None]:
         for search_page in self.search_pages:
