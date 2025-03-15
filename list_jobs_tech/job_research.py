@@ -117,9 +117,10 @@ class JobResearch:
         try:
             job_offer_dict = self.website.job_offer_extractor(response)
         except Exception as e:
-            print(url)
+            print(f"❌ {url}")
             print(e)
             return None
+        print(f"✅ {url}")
         for key, val in job_offer_dict.items():
             setattr(
                 job_offer,

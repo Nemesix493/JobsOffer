@@ -25,11 +25,23 @@ class ReportCommand(Command):
             "Without EMAIL specify send to the default email"
             " if configured"
         )
+        fields_choices = [field.value for field in Report.Fields]
+        parser.add_argument(
+            "--fields",
+            type=str,
+            nargs="*",
+            choices=fields_choices,
+            help="Fields to report (default: all if empty)"
+        )
 
     @classmethod
     def execute(cls, parsed_args: Namespace) -> None:
-        report = Report()
-        report.print_report()
+        fields = set()
+        if parsed_args.fields:
+            for field_value in parsed_args.fields:
+                fields.add(Report.Fields(field_value))
+        report = Report(fields)
+        print(report.text())
         if parsed_args.email:
             if isinstance(parsed_args.email, str):
                 email_adresse = parsed_args.email
