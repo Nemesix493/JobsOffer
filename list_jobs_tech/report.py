@@ -1,17 +1,33 @@
 from sqlalchemy import desc, func
 from jinja2 import Environment, FileSystemLoader
+from enum import Enum
 
 from .database import JobOffer, Technology, ManageDatabase
 from .settings import TEMPLATES_DIR
 
 
 class Report:
+    class Fields(Enum):
+        SHOULD_LOOK = 'should-look'
+        SHOULD_LEARN = 'should-learn'
+        SHOULD_DEEPEN = 'should-deepen'
+
+    def __init__(self, fields: set[Fields]):
+        """Set up the fields wanted in the report"""
+        if not all(isinstance(field, self.Fields) for field in fields):
+            raise TypeError("fields must be instance of Report.Fields !")
+        self._fields = fields
+        if len(self._fields) == 0:
+            for field in self.Fields:
+                self._fields.add(field)
+
     @property
     def session(self):
         return ManageDatabase.get_session()
 
     @property
-    def report_should_learn(self):
+    def should_learn(self) -> list[Technology]:
+        """Return the top two technologies you should learn"""
         if not hasattr(self, "_should_should_learn_deepen"):
             setattr(
                 self,
@@ -26,7 +42,8 @@ class Report:
         return getattr(self, "_should_learn")
 
     @property
-    def report_should_deepen(self):
+    def should_deepen(self) -> list[Technology]:
+        """Return the top five technologies you should deepen"""
         if not hasattr(self, "_should_deepen"):
             setattr(
                 self,
@@ -65,7 +82,8 @@ class Report:
         return should_look
 
     @property
-    def report_should_look(self):
+    def should_look(self) -> list[JobOffer]:
+        """Return the top five Jobs Offers you should look"""
         if not hasattr(self, "_should_look"):
             setattr(
                 self,
@@ -74,19 +92,26 @@ class Report:
             )
         return getattr(self, "_should_look")
 
-    def print_report(self):
-        print(self.text())
+    @property
+    def context(self) -> dict:
+        """Return the context for the templates"""
+        return {
+            field.value.replace('-', '_'): getattr(self, field.value.replace('-', '_'))
+            for field in self._fields
+        }
 
-    def html(self):
+    def html(self) -> str:
+        """Return html format report"""
         env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = env.get_template("report.html")
-        result = template.render(report=self)
+        result = template.render(self.context)
         env.cache.clear()
         return result
-    
-    def text(self):
+
+    def text(self) -> str:
+        """Return text format report"""
         env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = env.get_template("report.txt")
-        result = template.render(report=self)
+        result = template.render(self.context)
         env.cache.clear()
         return result
