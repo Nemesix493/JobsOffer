@@ -24,7 +24,22 @@ class OffersAnalyser:
         if technologies_length > 0:
             job_offer.score /= technologies_length
 
+    @staticmethod
+    def prevent_false_match_rule(pattern: str) -> str:
+        """
+        Ensure the pattern is preceded and followed by a non-alphanumeric boundary
+        to prevent false matches.
+        """
+        return f"(?<!\\w){pattern}(?!\\w)"
+
     # Class methods
+
+    @classmethod
+    def apply_pattern_rules(cls, pattern: str) -> str:
+        """Apply various rules to the pattern to prevent mismatches."""
+        transformed_pattern = re.escape(pattern)
+        transformed_pattern = cls.prevent_false_match_rule(transformed_pattern)
+        return transformed_pattern
 
     @classmethod
     def all_technologies(cls) -> list[Technology]:
@@ -50,7 +65,7 @@ class OffersAnalyser:
         """
         technologies = set()
         for pattern, technology in cls.tech_by_aliases().items():
-            if re.search(re.escape(pattern), job_offer.description, re.IGNORECASE):
+            if re.search(cls.apply_pattern_rules(pattern), job_offer.description, re.IGNORECASE):
                 technologies.add(technology)
         job_offer.technologies = list(technologies)
 
