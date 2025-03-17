@@ -57,7 +57,18 @@ class Report:
             )
         return getattr(self, "_should_deepen")
 
+    def set_offers_as_reported(self, offers: list[JobOffer]) -> None:
+        """
+        Set a list of JobOffers as reported in the database,
+         preventing them from being reported in future reports.
+        """
+        for offer in offers:
+            offer.reported = True
+            self.session.add(offer)
+        self.session.commit()
+
     def get_should_look(self):
+        """Return the top five JobOffers from the database according to report criteria."""
         max_time_adjusted = self.session.query(
             func.max(JobOffer.time_adjusted)
         ).scalar_subquery()
@@ -74,11 +85,9 @@ class Report:
         )
         should_look = []
         for job_offer, time_adjusted_score in reported_offer:
-            job_offer.reported = True
             job_offer.set_time_adjusted_score = time_adjusted_score
             should_look.append(job_offer)
-            self.session.add(job_offer)
-        self.session.commit()
+        self.set_offers_as_reported(should_look)
         return should_look
 
     @property
