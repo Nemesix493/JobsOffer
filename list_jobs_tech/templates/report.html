@@ -12,7 +12,7 @@
             <li>
                 <p>name : {{technology.name}}</p>
                 <p>Skill level : {{technology.skill_level}}</p>
-                <p>Average score : {{technology.average_score}}</p>
+                <p>Average score : {{technology.average_score|round(3)}}</p>
             </li>
         {% endfor %}
     </ol>
@@ -24,7 +24,7 @@
             <li>
                 <p>name : {{technology.name}}</p>
                 <p>Skill level : {{technology.skill_level}}</p>
-                <p>Deepen score : {{technology.deepen_score}}</p>
+                <p>Deepen score : {{technology.deepen_score|round(3)}}</p>
             </li>
         {% endfor %}
     </ol>
@@ -36,9 +36,9 @@
             <li>
                 <h4>{{offer.title}}</h4>
                 <p>{{offer.work_cities[0].name}}</p>
-                <p>Score : {{offer.score}}</p>
+                <p>Score : {{offer.score|round(3)}}</p>
                 {%- if offer.time_adjusted_score %}
-                <p>Time ajusted score : {{offer.time_adjusted_score}}</p>
+                <p>Time ajusted score : {{offer.time_adjusted_score|round(3)}}</p>
                 {% endif %}
                 <p>Url : <a href="{{offer.url}}">{{offer.url}}</a></p>
                 <p>Technologies :</p>
