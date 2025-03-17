@@ -71,7 +71,7 @@ class ResearchCommand(Command, JsonParseMixin):
 
     @classmethod
     def execute(cls, parsed_args: Namespace) -> None:
+        """Execute the command from the parsed_args"""
         analyser = cls.get_analyser(parsed_args.research_params)
         if analyser is not None:
-            analyser.analyse_offers()
-            analyser.update_technologies()
+            analyser.analyze()
