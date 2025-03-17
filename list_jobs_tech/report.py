@@ -79,7 +79,7 @@ class Report:
             self.session.query(
                 JobOffer,
                 (
-                    (3 * JobOffer.score + (10 * JobOffer.time_adjusted / max_time_adjusted)) / 5
+                    (4 * JobOffer.score + (5 * JobOffer.time_adjusted / max_time_adjusted)) / 5
                 ).label('time_adjusted_score')
             ).filter(JobOffer.last_seen_date == max_last_seen_date)
             .filter(JobOffer.score >= 3)
