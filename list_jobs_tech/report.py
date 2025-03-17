@@ -69,6 +69,9 @@ class Report:
 
     def get_should_look(self):
         """Return the top five JobOffers from the database according to report criteria."""
+        max_last_seen_date = self.session.query(
+            func.max(JobOffer.last_seen_date)
+        ).scalar_subquery()
         max_time_adjusted = self.session.query(
             func.max(JobOffer.time_adjusted)
         ).scalar_subquery()
@@ -78,7 +81,8 @@ class Report:
                 (
                     (3 * JobOffer.score + (10 * JobOffer.time_adjusted / max_time_adjusted)) / 5
                 ).label('time_adjusted_score')
-            ).filter(JobOffer.score >= 3)
+            ).filter(JobOffer.last_seen_date == max_last_seen_date)
+            .filter(JobOffer.score >= 3)
             .filter(JobOffer.reported is not True)
             .order_by(desc('time_adjusted_score'))
             .limit(5).all()
