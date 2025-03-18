@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from .ressource_command import RessourceCommand
 from ..database import ManageDatabase
 from ..database.models import Technology, TechnologyAlias
+from ..offers_analyzer import OffersAnalyser
 
 
 class TechnologyResourceCommand(RessourceCommand):
@@ -88,6 +89,7 @@ class TechnologyResourceCommand(RessourceCommand):
                 )
             ManageDatabase.get_session().add(technoloy_instance)
             ManageDatabase.get_session().commit()
+            OffersAnalyser.reanalyze()
             print(str(technoloy_instance))
         except TypeError as e:
             print(e)
@@ -112,6 +114,7 @@ class TechnologyResourceCommand(RessourceCommand):
                 )
             ManageDatabase.get_session().add(instance)
             ManageDatabase.get_session().commit()
+            OffersAnalyser.reanalyze()
             print(str(instance))
         except TypeError as e:
             print(e)

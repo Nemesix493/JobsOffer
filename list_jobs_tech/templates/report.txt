@@ -5,7 +5,7 @@ You should learn :
 {%- for technology in should_learn %}
     - name : {{technology.name}}
         Skill level : {{technology.skill_level}}
-        Average score : {{technology.average_score}}
+        Average score : {{technology.average_score|round(3)}}
 {%- endfor %}
 {%- endif %}
 
@@ -14,7 +14,7 @@ You should deepen :
 {%- for technology in should_deepen %}
     - name : {{technology.name}}
         Skill level : {{technology.skill_level}}
-        Deepen score : {{technology.deepen_score}}
+        Deepen score : {{technology.deepen_score|round(3)}}
 {%- endfor %}
 {%- endif %}
 
@@ -23,9 +23,9 @@ You should look :
 {%- for offer in should_look %}
     - {{offer.title}}
         {{offer.work_cities[0].name}}
-        Score : {{offer.score}}
+        Score : {{offer.score|round(3)}}
         {%- if offer.time_adjusted_score %}
-        Time ajusted score : {{offer.time_adjusted_score}}
+        Time ajusted score : {{offer.time_adjusted_score|round(3)}}
         {%- endif %}
         Url : {{offer.url}}
         Technologies:
