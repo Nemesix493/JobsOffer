@@ -1,4 +1,4 @@
 # Jobs Offer
 
 ## Version
-**v0.2** 🚀
+**v0.3** 🚀
