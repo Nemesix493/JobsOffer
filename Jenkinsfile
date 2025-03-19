@@ -6,6 +6,7 @@ pipeline{
     }
     environment { 
         SMTP_SERVER = "smtp.gmail.com"
+        PYLINT_MIN_SCORE = 7
     }
     stages{
         stage('Build'){
@@ -20,6 +21,15 @@ pipeline{
                     }
                 }
                 sh './env/bin/pip install -q -r ./requirements.txt'
+            }
+        }
+        stage('Lint tests'){
+            when {
+                triggeredBy 'SCMTrigger'
+            }
+            steps{
+                sh './env/bin/python -m pylint --fail-under=$PYLINT_MIN_SCORE --output=report-pylint.txt .'
+                sh './env/bin/python -m flake8 --output-file=flake8-report.txt'
             }
         }
         stage('Run'){
