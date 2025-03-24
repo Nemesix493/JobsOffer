@@ -50,14 +50,14 @@ class JobResearch:
     def session(self):
         return ManageDatabase.get_session()
 
-    def update_or_create_job_offer(self, offer_ID: str) -> JobOffer | None:
+    def update_or_create_job_offer(self, offer_id: str) -> JobOffer | None:
         """
         try to get object if got update it
         else create it
         """
         query = self.session.query(JobOffer)
         job_offer = query.filter(
-            JobOffer.website_id == offer_ID
+            JobOffer.website_id == offer_id
         ).filter(
             JobOffer.research_website == self.website
         ).first()
@@ -67,7 +67,7 @@ class JobResearch:
             self.session.add(job_offer)
             self.session.commit()
             return None
-        return self.get_job_offer(offer_ID)
+        return self.get_job_offer(offer_id)
 
     @property
     def delayed_requests(self) -> DelayedRequests:
@@ -80,7 +80,7 @@ class JobResearch:
 
     def get_results(self) -> None:
         self._results = int(re.match(
-            "(^[0-9]*)",
+            "(^\d*)",  # noqa: W605
             str(
                 BeautifulSoup(
                     self.delayed_requests.get(
@@ -106,11 +106,11 @@ class JobResearch:
             )
         return self._search_pages
 
-    def get_job_offer(self, offer_ID) -> JobOffer:
-        url = self.website.get_offer_url(offer_ID)
+    def get_job_offer(self, offer_id) -> JobOffer:
+        url = self.website.get_offer_url(offer_id)
         response = self.delayed_requests.get(url)
         job_offer = JobOffer(
-            website_id=offer_ID,
+            website_id=offer_id,
             url=url,
             research_website=self.website,
         )
@@ -154,10 +154,10 @@ class JobResearch:
         """
         if self._job_offers is None:
             self._job_offers = []
-            for offer_ID in self.get_job_offers_ID():
+            for offer_id in self.get_job_offers_ID():
                 if not self.is_under_max():
                     break
-                job_offer = self.update_or_create_job_offer(offer_ID)
+                job_offer = self.update_or_create_job_offer(offer_id)
                 if job_offer is not None:
                     self.count += 1
                     self._job_offers.append(job_offer)
