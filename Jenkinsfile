@@ -6,6 +6,7 @@ pipeline{
     }
     environment { 
         SMTP_SERVER = "smtp.gmail.com"
+        SONAR_SERVER = "Sonar"
         PYLINT_MIN_SCORE = 7
     }
     stages{
