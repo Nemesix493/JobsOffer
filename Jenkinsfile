@@ -21,6 +21,7 @@ pipeline{
                     }
                 }
                 sh './env/bin/pip install -q -r ./requirements.txt'
+                sh './env/bin/pip install -q -r ./test_requirements.txt'
             }
         }
         stage('Lint tests'){
