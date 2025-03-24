@@ -32,6 +32,24 @@ pipeline{
                 sh './env/bin/python -m flake8 --output-file=flake8-report.txt'
             }
         }
+        stage('SonarQube Analysis'){
+            when {
+                triggeredBy 'SCMTrigger'
+            }
+            steps{
+                script {
+                    def scannerHome = tool 'SonarQube'
+                    withSonarQubeEnv(SONAR_SERVER) {
+                        withCredentials([string(credentialsId: 'jobs-offer-sonarqube-pjtk', variable: 'PROJECT_TOKEN')]) {
+                            sh '''
+                            /var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQube/bin/sonar-scanner -Dsonar.token=$PROJECT_TOKEN
+                            '''
+                        } 
+                    }
+                }
+                waitForQualityGate abortPipeline: true, credentialsId: 'SONAR_TOKEN'
+            }
+        }
         stage('Run'){
             options {
                 // Avoid Jenkins kill the processus during the scrapping
