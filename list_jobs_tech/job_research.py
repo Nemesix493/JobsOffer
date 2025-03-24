@@ -132,7 +132,7 @@ class JobResearch:
         self.session.commit()
         return job_offer
 
-    def get_job_offers_ID(self) -> Generator[str, None, None]:
+    def get_job_offers_id(self) -> Generator[str, None, None]:
         for search_page in self.search_pages:
             response = self.delayed_requests.get(
                 search_page['url']
@@ -154,7 +154,7 @@ class JobResearch:
         """
         if self._job_offers is None:
             self._job_offers = []
-            for offer_id in self.get_job_offers_ID():
+            for offer_id in self.get_job_offers_id():
                 if not self.is_under_max():
                     break
                 job_offer = self.update_or_create_job_offer(offer_id)
