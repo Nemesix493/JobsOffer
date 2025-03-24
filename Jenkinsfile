@@ -61,6 +61,7 @@ pipeline{
                 triggeredBy 'TimerTrigger'
             }
             steps{
+                sh "git checkout master"
                 sh "./env/bin/python -m run research -p $WORK_RESEARCH_PARAMETERS"
                 withCredentials([usernamePassword(credentialsId: 'GmailCreds', usernameVariable: 'EMAIL_SENDER', passwordVariable: 'EMAIL_PASSWORD')]) {
                     sh 'env/bin/python -m run report -e'
@@ -72,8 +73,9 @@ pipeline{
                 triggeredBy 'UserIdCause'
             }
             steps{
+                sh "git checkout master"
                 script {
-                    
+
                     def command = input(
                         message: "Which command would you run?",
                         ok: "Run",
