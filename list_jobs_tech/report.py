@@ -82,10 +82,9 @@ class Report:
                     (4 * JobOffer.score + (5 * JobOffer.time_adjusted / max_time_adjusted)) / 5
                 ).label('time_adjusted_score')
             ).filter(JobOffer.last_seen_date == max_last_seen_date)
-            .filter(JobOffer.score >= 3)
             .filter(JobOffer.reported is not True)
             .order_by(desc('time_adjusted_score'))
-            .limit(5).all()
+            .limit(10).all()
         )
         should_look = []
         for job_offer, time_adjusted_score in reported_offer:

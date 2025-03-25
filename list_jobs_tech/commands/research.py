@@ -60,7 +60,8 @@ class ResearchCommand(Command, JsonParseMixin):
         )
 
     @classmethod
-    def get_analyser(cls, json_text: str) -> OffersAnalyser:
+    def get_analyser(cls, json_text: str) -> OffersAnalyser | None:
+        """Return OfferAnalyser from the given json or None in not valid"""
         json_object = cls.json_parse_validate(json_text, list[dict[str, str | int]])
         if json_object is None:
             return None
