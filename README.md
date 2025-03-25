@@ -1,7 +1,7 @@
 # Jobs Offer
 
 ## Version
-**v0.4** 🚀
+**v0.5** 🚀
 
 ## Report
 To generate a report, run:
